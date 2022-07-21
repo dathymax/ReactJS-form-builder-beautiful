@@ -1,67 +1,31 @@
 import React, {useState} from "react";
-import {DragDropContext} from "react-beautiful-dnd";
 import SidebarFormBuilder from "./components/layout/Sidebar";
+import {DndProvider} from "react-dnd";
+import {HTML5Backend} from "react-dnd-html5-backend";
 import ContentFormBuilder from "./components/layout/Content";
-import {copy, move, reorder} from "./components/functions/functions";
-import {ITEMS} from "./components/items/items";
-import {v4} from "uuid";
+import './App.css';
 
 function App() {
-    const [state, setState] = useState({
-        [v4()]: []
-    });
-
-    const onDragEnd = (result) => {
-        const { source, destination } = result;
-
-        // dropped outside the list
-        if (!destination) {
-            return;
-        }
-
-        switch (source.droppableId) {
-            case destination.droppableId:
-                setState((prevState) => ({
-                    ...prevState,
-                    [destination.droppableId]: reorder(
-                        state[source.droppableId],
-                        source.index,
-                        destination.index
-                    )
-                }));
-                break;
-            case "ITEMS":
-                setState((prevState) => ({
-                    ...prevState,
-                    [destination.droppableId]: copy(
-                        ITEMS,
-                        prevState[destination.droppableId],
-                        source,
-                        destination
-                    )
-                }));
-                break;
-            default:
-                setState((prevState) => ({
-                    ...prevState,
-                    ...move(
-                        prevState[source.droppableId],
-                        prevState[destination.droppableId],
-                        source,
-                        destination
-                    )
-                }));
-                break;
-        }
+    const [userData, setUserData] = useState({});
+    const changeHandler = (data) => {
+        setUserData({...userData, ...data});
     };
 
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
-            <div style={{display: "flex"}}>
+        <DndProvider backend={HTML5Backend}>
+            <div style={{
+                display: "flex",
+                flexDirection: "row",
+                minHeight: "95%",
+            }}>
                 <SidebarFormBuilder/>
-                <ContentFormBuilder state={state}/>
+                <ContentFormBuilder
+                    change={(data) => {
+                        changeHandler(data);
+                    }}
+                />
             </div>
-        </DragDropContext>
+        </DndProvider>
     );
 }
 

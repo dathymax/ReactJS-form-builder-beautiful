@@ -1,37 +1,19 @@
 import React from 'react';
-import {Droppable, Draggable} from "react-beautiful-dnd";
-import {Clone, Item, Kiosk} from "../items/Styled";
-import {ITEMS} from "../items/items";
+import BoxWrapper from "../boxes/BoxWrapper";
 
 function SidebarFormBuilder(props) {
+    const list = [
+        {id: 1, name: "Input"},
+        {id: 2, name: "Textarea"},
+    ]
+
     return (
-        <Droppable droppableId="ITEMS" isDropDisabled={true}>
-            {(provided, snapshot) => (
-                <Kiosk
-                    ref={provided.innerRef}
-                    isDraggingOver={snapshot.isDraggingOver}
-                >
-                    {ITEMS.map((item, index) => (
-                        <Draggable key={item.id} draggableId={item.id} index={index}>
-                            {(provided, snapshot) => (
-                                <React.Fragment>
-                                    <Item
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        isDragging={snapshot.isDragging}
-                                        style={provided.draggableProps.style}
-                                    >
-                                        {item.content}
-                                    </Item>
-                                    {snapshot.isDragging && <Clone>{item.content}</Clone>}
-                                </React.Fragment>
-                            )}
-                        </Draggable>
-                    ))}
-                </Kiosk>
-            )}
-        </Droppable>
+        <div style={{backgroundColor: "#EBEBEB", display: "flex", flexDirection: "column", alignItems: "center"}}>
+            <h3 style={{color: "black", margin: 10}}>Widgets</h3>
+            {list.map((item, index) => (
+                <BoxWrapper key={index} id={item.id} name={item.name}/>
+            ))}
+        </div>
     );
 }
 

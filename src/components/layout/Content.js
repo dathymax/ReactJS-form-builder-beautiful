@@ -1,51 +1,74 @@
-import React from 'react';
-import {Draggable, Droppable} from "react-beautiful-dnd";
-import {Container, Handle, Item, Notice, Content} from "../items/Styled";
+import React, {useCallback, useState} from 'react';
+import {ItemTypes} from "../items/type";
+import {useDrop} from "react-dnd";
+import {Responsive, WidthProvider} from "react-grid-layout";
+import BoxElement from "../elements/BoxElement";
 
-function ContentFormBuilder({state}) {
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
+
+const rowHeights = {lg: 5, md: 3, sm: 2, xs: 1};
+const cols = {lg: 24, md: 24, sm: 24, xs: 24};
+const breakpoints = {lg: 1200, md: 996, sm: 768, xs: 480};
+
+function ContentFormBuilder({change}) {
+    const [row, setRow] = useState([]);
+
+    const [height, setHeight] = useState(rowHeights.lg);
+
+    const onBreakpointChange = useCallback(
+        (newBreakpoint) => {
+            setHeight(rowHeights[newBreakpoint]);
+        },
+        [setHeight]
+    );
+
+    const [{isOver}, drop] = useDrop({
+        accept: ItemTypes.BOX,
+        drop: (item, monitor) => {
+            setRow((old) => {
+                change([...old, {name: item.name, id: item.id}]);
+                return [...old, {name: item.name, id: item.id}];
+            });
+        },
+        collect: (monitor) => ({
+            isOver: !!monitor.isOver(),
+        }),
+    });
     return (
-        <Content>
-            {Object.keys(state).map((list, i) => (
-                <Droppable key={list} droppableId={list}>
-                    {(provided, snapshot) => (
-                        <Container
-                            ref={provided.innerRef}
-                            isDraggingOver={snapshot.isDraggingOver}
-                        >
-                            {state[list].length
-                                ? state[list].map((item, index) => (
-                                    <Draggable
-                                        key={item.id}
-                                        draggableId={item.id}
-                                        index={index}
-                                    >
-                                        {(provided, snapshot) => (
-                                            <Item
-                                                ref={provided.innerRef}
-                                                {...provided.draggableProps}
-                                                isDragging={snapshot.isDragging}
-                                                style={provided.draggableProps.style}
-                                            >
-                                                <Handle {...provided.dragHandleProps}>
-                                                    <svg width="24" height="24" viewBox="0 0 24 24">
-                                                        <path
-                                                            fill="currentColor"
-                                                            d="M3,15H21V13H3V15M3,19H21V17H3V19M3,11H21V9H3V11M3,5V7H21V5H3Z"
-                                                        />
-                                                    </svg>
-                                                </Handle>
-                                                {item.content}
-                                            </Item>
-                                        )}
-                                    </Draggable>
-                                ))
-                                : !provided.placeholder && <Notice>Drop items here</Notice>}
-                            {provided.placeholder}
-                        </Container>
-                    )}
-                </Droppable>
-            ))}
-        </Content>
+        <div
+            ref={drop}
+            style={{
+                maxWidth: "100%",
+                height: "100vh",
+                display: "flex",
+                flexDirection: "column",
+                border: "1px solid #000",
+                width: "100%"
+            }}
+        >
+            <ResponsiveReactGridLayout
+                className="layout border"
+                cols={cols}
+                breakpoints={breakpoints}
+                rowHeight={height}
+                onBreakpointChange={onBreakpointChange}
+                measureBeforeMount={false}
+                style={{
+                    height: "100%",
+                    width: "100%"
+                }}
+            >
+                {row.length !== 0 ? (
+                    row.map((ele, index) => {
+                        return (
+                            <BoxElement key={index} id={ele.id} name={ele.name}/>
+                        );
+                    })
+                ) : (
+                    <div style={{height: 500}}/>
+                )}
+            </ResponsiveReactGridLayout>
+        </div>
     );
 }
 
